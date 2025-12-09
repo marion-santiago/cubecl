@@ -96,8 +96,8 @@ impl DialectWmmaCompiler<HipDialect<Self>> for RocWmmaCompiler {
 
     fn supported_wmma_combinations(arch: &AMDArchitecture) -> SupportedMmaCombinations {
         let combinations = match arch {
-            AMDArchitecture::GFX10 | AMDArchitecture::GFX11 => {
-                // For gfx11 the supported tile dimensions are always the same
+            AMDArchitecture::GFX10 | AMDArchitecture::GFX11 | AMDArchitecture::GFX12 => {
+                // For gfx11 and gfx12 the supported tile dimensions are always the same
                 //                                   m   n   k
                 let tdims = vec![(16, 16, 16), (16, 16, 32)];
                 let types = vec![
