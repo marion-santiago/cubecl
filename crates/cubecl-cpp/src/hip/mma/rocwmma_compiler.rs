@@ -96,8 +96,53 @@ impl DialectWmmaCompiler<HipDialect<Self>> for RocWmmaCompiler {
 
     fn supported_wmma_combinations(arch: &AMDArchitecture) -> SupportedMmaCombinations {
         let combinations = match arch {
-            AMDArchitecture::GFX10 | AMDArchitecture::GFX11 | AMDArchitecture::GFX12 => {
-                // For gfx11 and gfx12 the supported tile dimensions are always the same
+            // GFX12 supports additional FP8 data types
+            AMDArchitecture::GFX12 => {
+                // For gfx12 the supported tile dimensions are always the same
+                //                                   m   n   k
+                let tdims = vec![(16, 16, 16), (16, 16, 32)];
+                let types = vec![
+                    (
+                        gpu::ElemType::Float(gpu::FloatKind::F16), // m / i
+                        gpu::ElemType::Float(gpu::FloatKind::F32), // n / o
+                        gpu::ElemType::Float(gpu::FloatKind::F32), // k / c
+                    ),
+                    (
+                        gpu::ElemType::Float(gpu::FloatKind::F16),
+                        gpu::ElemType::Float(gpu::FloatKind::F16),
+                        gpu::ElemType::Float(gpu::FloatKind::F32),
+                    ),
+                    (
+                        gpu::ElemType::Float(gpu::FloatKind::F16),
+                        gpu::ElemType::Float(gpu::FloatKind::F16),
+                        gpu::ElemType::Float(gpu::FloatKind::F16),
+                    ),
+                    (
+                        gpu::ElemType::Float(gpu::FloatKind::BF16),
+                        gpu::ElemType::Float(gpu::FloatKind::F32),
+                        gpu::ElemType::Float(gpu::FloatKind::F32),
+                    ),
+                    (
+                        gpu::ElemType::Float(gpu::FloatKind::BF16),
+                        gpu::ElemType::Float(gpu::FloatKind::BF16),
+                        gpu::ElemType::Float(gpu::FloatKind::F32),
+                    ),
+                    (
+                        gpu::ElemType::Float(gpu::FloatKind::BF16),
+                        gpu::ElemType::Float(gpu::FloatKind::BF16),
+                        gpu::ElemType::Float(gpu::FloatKind::BF16),
+                    ),
+                    // FP8 support (E4M3 format)
+                    (
+                        gpu::ElemType::Float(gpu::FloatKind::E4M3),
+                        gpu::ElemType::Float(gpu::FloatKind::E4M3),
+                        gpu::ElemType::Float(gpu::FloatKind::E4M3),
+                    ),
+                ];
+                types.into_iter().map(|it| (it, tdims.clone())).collect()
+            }
+            AMDArchitecture::GFX10 | AMDArchitecture::GFX11 => {
+                // For gfx10 and gfx11 the supported tile dimensions are always the same
                 //                                   m   n   k
                 let tdims = vec![(16, 16, 16), (16, 16, 32)];
                 let types = vec![
